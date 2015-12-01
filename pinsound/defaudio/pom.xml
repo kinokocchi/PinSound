@@ -1,0 +1,12 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>info.pinlab</groupId>
+    <artifactId>pinsound</artifactId>
+    <version>0.0.4</version>
+  </parent>
+  <groupId>info.pinlab.pinsound</groupId>
+  <artifactId>defaudio</artifactId>
+  <name>PinSound - Default Audio Implementation</name>
+  <description>Implements audio functionality using the javax.sound package</description>
+</project>
