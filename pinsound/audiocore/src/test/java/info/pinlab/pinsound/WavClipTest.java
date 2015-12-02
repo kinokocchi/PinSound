@@ -13,9 +13,9 @@ import org.junit.Test;
 
 public class WavClipTest {
 
-	static String [] wavNames = new String[]{"sample.wav", "longsample.wav", "verylongsample.wav"}; 
+	static String [] wavNames = new String[]{"sample.wav" /* , "longsample.wav", "verylongsample.wav" */ }; 
 	static List<WavClip> wavs = new ArrayList<WavClip>();
-
+	static int intForKid ;
 
 	static {
 		try{
@@ -25,6 +25,9 @@ public class WavClipTest {
 				assertTrue(wav != null);
 				wavs.add(wav);
 			}
+			
+			
+			
 		}catch(IOException e){
 			assert(e==null);  //-- wow, this is ugly
 		}catch(UnsupportedAudioFileException e){
@@ -55,7 +58,7 @@ public class WavClipTest {
 	}
 
 
-	@Test 
+//	@Test 
 	public void testDblArray() throws Exception{
 		for(WavClip wav : wavs){
 			double [] samples = wav.toDoubleArray();
@@ -77,6 +80,11 @@ public class WavClipTest {
 			int [] samples = wav.toIntArray();
 			System.out.println(samples.length);
 			assertTrue(samples.length > 0);
+			
+			for(int i = 0 ; i< 10 ; i++){
+				System.out.println(samples[i]);
+			}
+			
 		}
 	}
 
