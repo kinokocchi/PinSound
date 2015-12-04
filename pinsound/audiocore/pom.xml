@@ -12,15 +12,15 @@
 	<description>Core classes for audio use</description>
 	<groupId>info.pinlab.pinsound</groupId>
 
-    
-    
+
+
 	<build>
 
-	    <testResources>
-	        <testResource>
-	            <directory>src/test/resources</directory>
-	        </testResource>
-	    </testResources>
+		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+			</testResource>
+		</testResources>
 
 
 
@@ -44,6 +44,9 @@
 						<goals>
 							<goal>jar</goal>
 						</goals>
+						<configuration>
+							<failOnError>false</failOnError>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

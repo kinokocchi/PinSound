@@ -105,8 +105,9 @@ public class WavClip implements Serializable, AudioClipIF{
 	/**
 	 * Copies interval into a new WavClip object.
 	 * 
-	 * @parameter startT selection start time in milliseconds
-	 * @parameter endT selection end time in milliseconds
+	 * @param startT selection start time in milliseconds
+	 * @param endT selection end time in milliseconds
+	 * @return the selected interval as {@link WavClip} 
 	 */
 	public WavClip getSelectionByTime(long startT, long endT){
 		float bytePerMs = getBytePerMs();

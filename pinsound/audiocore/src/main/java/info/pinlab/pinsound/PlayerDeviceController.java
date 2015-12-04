@@ -14,10 +14,11 @@ public interface PlayerDeviceController extends PlayerDeviceMonitor {
 	 */
 	public long pause();
 	public void stop();
+
 	
 	/**
 	 * 
-	 * @return position in frames
+	 * @param startPosInFrames  start frame (inclusive)
 	 */
 	public void setCursorPosInMs(long startPosInFrames);
 
