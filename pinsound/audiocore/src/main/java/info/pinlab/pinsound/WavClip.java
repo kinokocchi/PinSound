@@ -37,8 +37,8 @@ public class WavClip implements Serializable, AudioClipIF{
 	transient AudioFormat af ;
 
 	//-- some stats
-	Integer sampleMin = null;
-	Integer sampleMax = null;
+//	Integer sampleMin = null;
+//	Integer sampleMax = null;
 
 	
 	static MessageDigest sha256Digest ;
@@ -230,6 +230,14 @@ public class WavClip implements Serializable, AudioClipIF{
 	}
 	
 	
+	
+	private int sampleN = 0;
+	private long sampleSum = 0;
+	private int sampleMin = Integer.MAX_VALUE;
+	private int sampleMax = Integer.MIN_VALUE;
+	double sampleMean = 0;
+//	int sampleN
+	
 	/**
 	 * 
 	 * @return int array of samples.
@@ -241,17 +249,62 @@ public class WavClip implements Serializable, AudioClipIF{
 		}
 		byte[] bytes = this.getSamples();
 		int bytePerFrame = af.getSampleSizeInBits() / 8; /* * this.getAudioFormat().getChannels(); */
-		
+		sampleN = bytes.length/bytePerFrame;
 		
 		int [] samples = new int[bytes.length/bytePerFrame];
 		int j = 0;
+		
+		
+		if(bytePerFrame == 1){ 
+			for (int i = 0 ; i < bytes.length ; i += bytePerFrame){
+				int sampleAsInt = 0;
+				sampleAsInt = (int) bytes[i];
+				samples[j++] = sampleAsInt;
+				//-- stats
+				sampleSum += sampleAsInt;
+				sampleMin  = sampleAsInt < sampleMin ? sampleAsInt : sampleMin;
+				sampleMax  = sampleAsInt > sampleMax ? sampleAsInt : sampleMax;
+			}
+		}
+		
+		if(bytePerFrame == 2){ 
+			if(!af.isBigEndian() /* LittleEndian */ ){
+				for (int i = 0 ; i < bytes.length ; i += bytePerFrame){
+					int sampleAsInt = 0;
+//					System.out.println("LE -> Int");
+					//-- Little Endian to signed integer --//
+					sampleAsInt = (int) bytes[i+1];
+					sampleAsInt <<= 8;
+					sampleAsInt |= bytes[i] & 0x00FF  ;
+					samples[j++] = sampleAsInt;
+					//-- stats
+					sampleSum += sampleAsInt;
+					sampleMin  = sampleAsInt < sampleMin ? sampleAsInt : sampleMin;
+					sampleMax  = sampleAsInt > sampleMax ? sampleAsInt : sampleMax;
+				}
+			}else{ //-- not big endian
+				for (int i = 0 ; i < bytes.length ; i += bytePerFrame){
+					int sampleAsInt = 0;
+	//				System.out.println("BE -> Int");
+					sampleAsInt = (int) bytes[i];
+					sampleAsInt <<= 8;
+					sampleAsInt |= bytes[i+1] & 0x00FF  ;
+					samples[j++] = sampleAsInt;
+					//-- stats
+					sampleSum += sampleAsInt;
+					sampleMin  = sampleAsInt < sampleMin ? sampleAsInt : sampleMin;
+					sampleMax  = sampleAsInt > sampleMax ? sampleAsInt : sampleMax;
+				}
+			}
+		}
+		
 		
 		for (int i = 0 ; i < bytes.length ; i += bytePerFrame){
 			int sampleAsInt = 0;
 			if(bytePerFrame == 1){ 
 				sampleAsInt = (int) bytes[i];
 			}else
-			if(bytePerFrame == 2 && isMono){ 
+			if(bytePerFrame == 2){ 
 				if(!af.isBigEndian() /* LittleEndian */ ){
 //					System.out.println("LE -> Int");
 					//-- Little Endian to signed integer --//
@@ -267,12 +320,27 @@ public class WavClip implements Serializable, AudioClipIF{
 				}
 			}
 			samples[j++] = sampleAsInt;
+			//-- stats
+			sampleSum += sampleAsInt;
+			sampleMin  = sampleAsInt < sampleMin ? sampleAsInt : sampleMin;
+			sampleMax  = sampleAsInt > sampleMax ? sampleAsInt : sampleMax;
 		}
+		sampleMean += 1.0*sampleSum/sampleN;  
 		bytes = null;
 		return samples;
 	}
 
 
+	/**
+	 * Returns stats about samples. 
+	 * 
+	 * @return min, max, sum, n
+	 */
+	public long[] getSampleMinMaxSum(){
+		return new long[]{sampleMin, sampleMax, sampleSum, sampleN};
+	}
+	
+	
 	public String getName(){
 		return name;
 	}
