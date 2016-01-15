@@ -196,7 +196,7 @@ public class WavClip implements Serializable, AudioClipIF{
 	
 	/**
 	 * 
-	 * @return normalized double array of samples with range {0,1}
+	 * @return normalized double array of samples with range {-1,1}
 	 */
 	public double[] toDoubleArray(){
 		int [] samplesAsInt = toIntArray();
@@ -217,7 +217,7 @@ public class WavClip implements Serializable, AudioClipIF{
 		};
 		
 		if(AudioFormat.Encoding.PCM_SIGNED.equals(af.getEncoding())){
-			pad = (int)div/2;
+			pad = 0;// (int)div/2;
 		}else{
 			throw new IllegalStateException("Can't handle files with " + af.getSampleSizeInBits() +" bit depth!");
 		}
