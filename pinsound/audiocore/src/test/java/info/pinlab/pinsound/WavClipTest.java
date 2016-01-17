@@ -74,6 +74,8 @@ public class WavClipTest {
 			System.out.println("    Mean= " + mean);
 			System.out.println("    Max = " + max);
 			
+			assertTrue("Min is less than -1.0! " + min , min >=-1.0);
+			assertTrue("Max is more than  1.0! " + min , min <= 1.0);
 			assertTrue("Non-zero sample mean for '" + wavNames[i] + "' (" + mean +")"
 					, mean < 0.01); // <- this factor 
 			i++;
@@ -86,11 +88,11 @@ public class WavClipTest {
 	public void testIntArray() throws Exception{
 		for(WavClip wav : wavs){
 			int [] samples = wav.toIntArray();
-			System.out.println(samples.length);
+//			System.out.println( samples.length);
 			assertTrue(samples.length > 0);
 			
 			for(int i = 0 ; i< 10 ; i++){
-				System.out.println(samples[i]);
+//				System.out.println(samples[i]);
 			}
 			
 		}
