@@ -18,6 +18,8 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 import org.apache.commons.codec.binary.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -27,6 +29,7 @@ import org.apache.commons.codec.binary.Base64;
  *
  */
 public class WavClip implements Serializable, AudioClipIF{
+	public static Logger LOG = LoggerFactory.getLogger(WavClip.class);
 	private static final long serialVersionUID = 4431714308845293L;
 	byte samples[];
 	int samplingRate;
@@ -210,8 +213,12 @@ public class WavClip implements Serializable, AudioClipIF{
 			div = 256.0d;
 			break;
 		case(16):
-			div = 32768 - sampleMean; //-- signed integer
-//			div = 65536;
+			if(AudioFormat.Encoding.PCM_SIGNED.equals(af.getEncoding())){
+				div = 32768 - sampleMean; //-- signed integer
+				div = sampleHalf > div ? sampleHalf : div;
+			}else{
+				div = 65536 - sampleMean;
+			}
 			break;
 		default:
 			throw new IllegalStateException("Can't handle files with " + af.getSampleSizeInBits() +" bit depth!");
@@ -224,8 +231,16 @@ public class WavClip implements Serializable, AudioClipIF{
 		}
 				
 		for(int i = 0; i < samplesAsInt.length ; i++){
-			samplesAsDbl[i] = (samplesAsInt[i]- sampleMean)/div;
+			samplesAsDbl[i] = ((double)samplesAsInt[i]- sampleMean)/div;
 //			samplesAsDbl[i] = (samplesAsInt[i]+pad )/div;
+//			if(samplesAsDbl[i] < -1.0){
+//				System.out.println(samplesAsInt[i]);
+//				System.out.println(samplesAsInt[i]-sampleMean);
+//				System.out.println(div);
+//				System.out.println(samplesAsDbl[i]);
+//				System.out.println("mean: " + sampleMean);
+//				System.exit(0);
+//			}
 		}
 		
 		return samplesAsDbl;
@@ -239,6 +254,8 @@ public class WavClip implements Serializable, AudioClipIF{
 	private int sampleMax = Integer.MIN_VALUE;
 	private double sampleMean = 0;
 	private double sampleHalf = 0;
+	private double sampleHalfUpper = 0;
+	private double sampleHalfLower = 0;
 //	int sampleN
 	
 	/**
@@ -300,6 +317,19 @@ public class WavClip implements Serializable, AudioClipIF{
 			}
 		}
 		
+		sampleMean = 1.0*sampleSum/sampleN;
+		sampleHalfUpper = Math.abs(sampleMax-sampleMean);
+		sampleHalfLower = Math.abs(sampleMin-sampleMean);
+		
+		sampleHalf = sampleHalfUpper > sampleHalfLower ? sampleHalfUpper : sampleHalfLower; 
+				bytes = null;
+		
+		LOG.info("Sample stats:" ); 
+		LOG.info(" sample max : " + sampleMax); 
+		LOG.info(" sample mean: " + sampleMean); 
+		LOG.info(" sample min : " + sampleMin); 
+		LOG.info(" sample half: " + sampleHalf); 
+		
 		
 //		for (int i = 0 ; i < bytes.length ; i += bytePerFrame){
 //			int sampleAsInt = 0;
@@ -327,10 +357,6 @@ public class WavClip implements Serializable, AudioClipIF{
 //			sampleMin  = sampleAsInt < sampleMin ? sampleAsInt : sampleMin;
 //			sampleMax  = sampleAsInt > sampleMax ? sampleAsInt : sampleMax;
 //		}
-		sampleMean = 1.0*sampleSum/sampleN;
-		sampleHalf = (sampleMin - sampleMean) > (sampleMax-sampleMean) ?
-				(sampleMin - sampleMean) : (sampleMax-sampleMean); 
-		bytes = null;
 		return samples;
 	}
 
