@@ -134,8 +134,17 @@ public class OpenAlRecorder implements RecorderDeviceController {
 	  return true;
 	}
 
+	
+	synchronized private void isRecInterruptReq(boolean b){
+		isRecInterruptReq = b;
+	}
+
+	synchronized private boolean isRecInterruptReq(){
+		return isRecInterruptReq ;
+	}
+
 	private void reInit(){
-		isRecInterruptReq = false;
+		isRecInterruptReq(false);
 		sampleBuffBytePos = 0;
 		avail = 0 ;
 		sampleBufferStorage = new ArrayList<ByteBuffer>(sampleBufferStorageSize);
@@ -366,6 +375,9 @@ public class OpenAlRecorder implements RecorderDeviceController {
 		}
 	}	
 	
+	
+	private Thread recThread = null;
+	
 	@Override
 	public void startRec(){
 		if(isRecording()){ //-- already recording! --//
@@ -373,20 +385,29 @@ public class OpenAlRecorder implements RecorderDeviceController {
 		}
 		isRecording(true);
 		//-- start recording in NEW thread
-		new Thread(new Runnable() {
+		recThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				reInit();
 				_capture();
 			}
-		}).start();
+		});
+		recThread.start();
 	}
 	
 	@Override
-	synchronized public void stopRec(){
+	public void stopRec(){
 		logger.info("Stop REC request!");
 		isRecording(false);
-		isRecInterruptReq = true;
+		isRecInterruptReq(true);
+		
+		if(recThread!=null){
+			try {
+				recThread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 //	synchronized private boolean isRecInterruptReq(){
 //		return isRecInterruptReq;
@@ -493,10 +514,10 @@ public class OpenAlRecorder implements RecorderDeviceController {
 					 sampleBuffBytePos = 0;
 //					 System.out.println("#" + sampleBufferStorage.size() + "  [" + sampleBuffBytePos + "/" + sampleBuffSzInBytes + "]   av " + avail);
 				 }
-				 if(isRecInterruptReq){
-					 logger.debug(" stopped requested but still avail " + avail);
+				 if(isRecInterruptReq()){
+					 logger.debug(" stopped requested, available bytes: " + avail);
 				 }
-				 if(avail==0 && isRecInterruptReq){
+				 if(avail==0 && isRecInterruptReq()){
 					 break REC_LOOP;
 				 }
 				 notAvailCnt = 0;
@@ -526,16 +547,15 @@ public class OpenAlRecorder implements RecorderDeviceController {
 	private void buildWav(){
 		//-- stop recording : in case it's still going on.. --//
 		stopRec();
-//		isRecInterruptReq = true;
-		while(isRecording()){
-			//-- wait till recording is finished --//
-			try{
-				logger.warn("Can't build wav while recording : retrying.. ");
-				Thread.sleep(500);
-			}catch(InterruptedException e){
-				break;
-			}
-		}
+//		while(isRecording()){
+//			//-- wait till recording is finished --//
+//			try{
+//				logger.warn("Can't build wav while recording : retrying.. ");
+//				Thread.sleep(500);
+//			}catch(InterruptedException e){
+//				break;
+//			}
+//		}
 		 
 		int audioLenInBytes = sampleBuffSzInBytes*(sampleBufferStorage.size()-1) + sampleBuffBytePos;
 		byte[] buff = new byte[sampleBuffSzInBytes];
