@@ -2,4 +2,4 @@
   * low-level sound
   * wrapper around OpenAL+LWJGL
   * utility functions
-  * used by other pin- projects (pinplayer, schnitt)
+  * used by other PinLab projects (PinPlayer, Schnitt)
